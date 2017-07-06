@@ -2,26 +2,23 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Collections;
 
-public class Inscripciones {
-	static byte MAX_MATERIAS = 5;
-	static byte MAX_UC = 21;
-	static byte MIN_UC = 2;
-	static ArrayList<Alumno> ALUMNOS = new ArrayList<>();
+public class AdminLibrerias {
+	static ArrayList<Comprador> COMPRADORES = new ArrayList<>();
 	
 	//METODO PRINCIPAL
 	public static void main(String arg[]) {
-		boolean alumno_inscrito = false;
+		boolean cliente_agregado = false;
 		byte opc;
 		do {
 			opc = menu();
 
 			// Valida que hayan alumnos inscritos
-			if (opc == 2 && !alumno_inscrito) {
+			if (opc == 2 && !cliente_agregado) {
 				MCursor.error("DEBE AGREGAR AL MENOS UN ALUMNO");
 				continue;
 			}
-			// Solo acepta opciones del 0 al 2
-			if (opc > 2 || opc < 0) { 
+			// Solo acepta opciones del 0 al 5
+			if (opc > 5 || opc < 0) { 
 				MCursor.error("ESCOJA UNA OPCION DEL MENU");
 				continue;
 			}
@@ -29,114 +26,174 @@ public class Inscripciones {
 			MCursor.BLinea(30);
 			switch(opc) {
 				case 1:
-					ingresarAlumno();
-					alumno_inscrito = true;
+					ingresarCliente();
+					cliente_agregado = true;
 					break;
 				case 2:
-					mostrarAlumno();
+					// modificarDatos();
+					break;
+				case 3:
+					mostrarListado();
+					break;
+				case 4:
+					buscarPorNombre();
+					break;
+				case 5:
+					// buscarPorRif();
 					break;
 			}//switch
 		}while (opc != 0);
 	}//main
 
-	//CASO 1: METODO PARA INGRESAR UN ALUMNO
-	public static void ingresarAlumno() {
+	//CASO 1: METODO PARA INGRESAR UN COMPRADOR
+	public static void ingresarCliente() {
 		MCursor.eqline();
-		MCursor.TCen("INGRESE LOS DATOS DEL ALUMNO #" + (ALUMNOS.size() + 1));
+		MCursor.TCen("INGRESE LOS DATOS DEL CLIENTE #" + (COMPRADORES.size() + 1));
 
-		// Nombre
+		// Nombre de la libreria
 		MCursor.eqline();
 		MCursor.UCursor(15);
-		String nombre;
+		String nombreLibreria;
 		do {
-			nombre = Leer.CString("NOMBRE = ").toUpperCase();
-		} while (nombre.length() < 0);
+			nombreLibreria = Leer.CString("NOMBRE DE LA LIBRERIA = ").toUpperCase();
+		} while (nombreLibreria.length() < 0);
 
-		// Cedula
+		// Numero de rif
 		MCursor.eqline();
-		String cedula;
+		String numRif;
 		do{
 			MCursor.UCursor(15);
-			cedula = Leer.CString("CEDULA = ");
-		}while (cedula.length() < 0);
+			numRif = Leer.CString("NUMERO DE RIF = ").toUpperCase();
+		}while (numRif.length() < 0);
 
-		// Sexo
+		// Nombre del representante
 		MCursor.eqline();
-		byte sexo;
+		String nombreRepresentante;
 		do {
 			MCursor.UCursor(15);
-			sexo = Leer.NByte("SEXO (1)Masculino (2)Femenino = ");
-			if ( sexo != 1 && sexo != 2) {
-				MCursor.error("EL SEXO DEBE SER (1)Masculino o (2)Femenino");
+			nombreRepresentante = Leer.CString("NOMBRE DEL REPRESENTANTE = ");
+		} while (nombreRepresentante.length() < 0);
+
+		// Cantidad de Libros
+		MCursor.eqline();
+		int cantidadLibros = 0;
+		do {
+			MCursor.UCursor(15);
+			cantidadLibros = Leer.NInt("CANTIDAD DE LIBROS = ");
+			if (cantidadLibros <= 0) {
+				MCursor.error("LA CANTIDAD DE LIBROS DEBE SER MAYOR A 0");
 				continue;
-			} else break;
+			}
+			break;
 		} while (true);
 
-		// Numero de materias
+		// Monto de las ventas
 		MCursor.eqline();
-		byte n_materias;
+		double montoVentas = 0;
 		do {
 			MCursor.UCursor(15);
-			n_materias = Leer.NByte("NUMERO DE MATERIAS INSCRITAS = ");
-			if ( n_materias < 1  || n_materias > MAX_MATERIAS) {
-				MCursor.error("EL NUMERO DE MATERIAS DEBE SER DE 1 A " + MAX_MATERIAS);
+			montoVentas = Leer.NDouble("MONTO DE LAS VENTAS = ");
+			if (montoVentas < 0) {
+				MCursor.error("EL MONTO DE LAS VENTSA DEBE SER MAYOR O IGUAL A 0");
 				continue;
-			} else break;
+			}
+			break;
 		} while (true);
 
-		// Numero de unidades de credito
+		// Costo del transporte
 		MCursor.eqline();
-		byte n_uc;
+		double costoTransporte = 0;
 		do {
 			MCursor.UCursor(15);
-			n_uc = Leer.NByte("NUMERO DE UNID DE CREDITO = ");
-			if ( n_uc < MIN_UC  || n_uc > MAX_UC) {
-				MCursor.error("EL NUMERO DE UC DEBE SER DE " + MIN_UC + " A " + MAX_UC);
+			costoTransporte = Leer.NDouble("COSTO DEL TRANSPORTE = ");
+			if (costoTransporte < 0) {
+				MCursor.error("EL COSTO DEL TRANSPORTE DEBE SER MAYOR O IGUAL A 0");
 				continue;
-			} else break;
+			}
+			break;
+		} while (true);
+
+		// Crear un objeto tipo Libros (caracteristicas)
+		Libros caractLibros = new Libros(cantidadLibros, montoVentas, costoTransporte);
+
+		// Monto inicial
+		MCursor.eqline();
+		double inicial = 0;
+		do {
+			MCursor.UCursor(15);
+			inicial = Leer.NDouble("MONTO DE LA INICIAL A PAGAR = ");
+			if (caractLibros.esInicialValida(inicial)) {
+				break;
+			}
+			MCursor.error("LA INICIAL DEBE SER MAYOR A " + caractLibros.getInicialValida());
+			continue;
+		} while (true);
+
+		// Numero de meses
+		MCursor.eqline();
+		int n_m = 0;
+		do {
+			MCursor.UCursor(15);
+			n_m = Leer.NInt("¿EN CUANTOS MESES PAGARA? (6)(8) O (10)= ");
+			if (n_m == 6 || n_m == 8 || n_m == 10) {
+				break;
+			}
+			MCursor.error("EL NUMERO DE MESES DEBE SER (6)(8) O (10)");
+			continue;
 		} while (true);
 		
-		// Agregar
-		ALUMNOS.add(
-			new Alumno(
-				nombre,
-				cedula,
-				sexo,
-				n_materias,
-				n_uc
+		// Agregar un comprador a memoria
+		COMPRADORES.add(
+			new Comprador(
+				nombreLibreria,
+				numRif,
+				nombreRepresentante,
+				caractLibros,
+				inicial,
+				n_m
 			)
 		);
-
 	}
 
-	//CASO 2: METODO PARA MOSTRAR LOS ALUMNOS
-	public static void mostrarAlumno() {
-		if(ALUMNOS.isEmpty()) MCursor.error("NO HAY ALUMNOS INSCRITOS");
+	//CASO 3: METODO PARA MOSTRAR EL LISTADO DE COMPRADORES
+	public static void mostrarListado() {
+		if(COMPRADORES.isEmpty()) MCursor.error("NO HAY ALUMNOS INSCRITOS");
 		else {
 			
-			MCursor.UCursor(15);
-			char alf = Leer
-				.CString("¿DESEA VER LA LISTA DE ALUMNOS ORDENADA? (S/N)")
-				.toUpperCase().charAt(0);
-			// Si se desea, mostrar alfabeticamente.
-			if (alf == 'S'){
-				Collections.sort(ALUMNOS, new Comparator<Alumno>(){
-					@Override
-					public int compare(Alumno m1, Alumno m2) {
-						// Ordenar por nombre
-						return m1.nombre.compareTo(m2.nombre);
-					}
-				});
-			}
+			// Ordenar alfabeticamente por el campo nombreLibreria
+			Collections.sort(COMPRADORES, new Comparator<Comprador>(){
+				@Override
+				public int compare(Comprador m1, Comprador m2) {
+					// Ordenar por nombreLibreria
+					return m1.nombreLibreria.compareTo(m2.nombreLibreria);
+				}
+			});
 			
 			// Ahora mostrar
-			for(int i = 0; i < ALUMNOS.size(); i++) {
+			COMPRADORES.forEach(e -> {
 				MCursor.BLinea(30);
-				ALUMNOS.get(i).mostrar(i);
+				e.mostrar();
 				MCursor.Salida();
-			}
+			});
 		}//else
 		return;
+	}
+
+	// CASO 4: METODO PARA BUSCAR POR NOMBRE
+
+	public static void buscarPorNombre() {
+		MCursor.eqline();
+		MCursor.TCen("INGRESE EL NOMBRE DE LA LIBREIA QUE DESEA BUSCAR");
+		MCursor.eqline();
+		String n_l;
+		do {
+			n_l = Leer.CString("LIBRERIA = ").toUpperCase();
+		} while (n_l.length() < 0);
+		
+		final String n_libreria = n_l;
+
+		// COMPRADORES.clone()  metodo para copiar el array el array copiado deberias filtrarlo
+
 	}
 
 	//METODO PARA MOSTRAR EL MENU DE OPCIONES
